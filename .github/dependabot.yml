@@ -17,18 +17,3 @@ updates:
       interval: "weekly"
     commit-message:
       prefix: "fix: "
-
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "fix: "
-    groups:
-      npm-dependencies:
-        patterns:
-          - "*"
-    ignore:
-      - dependency-name: "conventional-changelog-conventionalcommits"
-        update-types:
-          - "version-update:semver-major"
