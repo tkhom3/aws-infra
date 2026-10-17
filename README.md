@@ -95,6 +95,12 @@ Terraform configuration for the existing `tkhom3-home-lab-backup` bucket is in
 bucket policy, AES256 default encryption, enabled versioning, and the lifecycle
 rule shown in the AWS console (expire noncurrent versions after 30 days, remove
 expired delete markers, and abort incomplete multipart uploads after 7 days).
+The `unraid_backup/` prefix retains that 30-day noncurrent-version expiration.
+The `photos/` prefix instead retains deleted object versions for 60 days before
+permanently expiring them. Current photo objects are not expired based on age;
+the 60-day clock starts when `s3cmd sync --delete` makes a version noncurrent.
+Expired delete markers are cleaned up and incomplete multipart uploads are
+aborted after 7 days across the bucket.
 
 First configure AWS credentials for the account in `AWS_ACCT_NUM` with
 permission to read and manage the bucket, then configure the backend. For

@@ -14,14 +14,36 @@ resource "aws_s3_bucket_lifecycle_configuration" "home_lab_backup" {
   bucket = aws_s3_bucket.home_lab_backup.id
 
   rule {
-    id     = "Delete noncurrent versions after 30 days"
+    id     = "Delete noncurrent unraid backup versions after 30 days"
     status = "Enabled"
 
-    filter {}
+    filter {
+      prefix = "unraid_backup/"
+    }
 
     noncurrent_version_expiration {
       noncurrent_days = 30
     }
+  }
+
+  rule {
+    id     = "Delete noncurrent photos versions after 60 days"
+    status = "Enabled"
+
+    filter {
+      prefix = "photos/"
+    }
+
+    noncurrent_version_expiration {
+      noncurrent_days = 60
+    }
+  }
+
+  rule {
+    id     = "Remove expired delete markers and abort incomplete uploads"
+    status = "Enabled"
+
+    filter {}
 
     expiration {
       expired_object_delete_marker = true
