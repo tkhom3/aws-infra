@@ -55,6 +55,7 @@ jobs:
         run: terraform plan -out=tfplan
         env:
           TF_VAR_aws_acct_num: ${{ secrets.AWS_ACCT_NUM }}
+          TF_VAR_aws_region: ${{ secrets.AWS_REGION }}
           TF_VAR_guardduty_notification_email: ${{ secrets.GD_NOTIFICATION_EMAIL_ADDRESS }}
 
       - name: Apply Terraform plan
