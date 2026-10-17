@@ -1,0 +1,60 @@
+name: Terraform deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: terraform-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Plan and apply
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11.4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Initialize Terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=terraform-state-${AWS_ACCT_NUM}-us-east-1-an" \
+            -backend-config="key=terraform.tfstate" \
+            -backend-config="region=us-east-1" \
+            -backend-config="use_lockfile=true"
+        env:
+          AWS_ACCT_NUM: ${{ secrets.AWS_ACCT_NUM }}
+
+      - name: Create Terraform plan
+        run: terraform plan -out=tfplan
+        env:
+          TF_VAR_aws_acct_num: ${{ secrets.AWS_ACCT_NUM }}
+          TF_VAR_guardduty_notification_email: ${{ secrets.GD_NOTIFICATION_EMAIL_ADDRESS }}
+
+      - name: Apply Terraform plan
+        run: terraform apply -auto-approve tfplan
