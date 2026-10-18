@@ -365,3 +365,5 @@ data
 .claude/*
 package-lock.json
 npm-debug.log*
+
+.terraform/

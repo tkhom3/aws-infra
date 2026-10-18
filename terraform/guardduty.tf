@@ -34,19 +34,22 @@ resource "aws_cloudwatch_event_target" "guardduty_findings" {
 
   input_transformer {
     input_paths = {
-      account_id   = "$.detail.accountId"
-      description  = "$.detail.description"
-      finding_id   = "$.detail.id"
-      finding_type = "$.detail.type"
-      region       = "$.region"
-      severity     = "$.detail.severity"
+      account_id       = "$.detail.accountId"
+      count            = "$.detail.service.count"
+      description      = "$.detail.description"
+      event_first_seen = "$.detail.service.eventFirstSeen"
+      event_last_seen  = "$.detail.service.eventLastSeen"
+      finding_id       = "$.detail.id"
+      finding_title    = "$.detail.title"
+      finding_type     = "$.detail.type"
+      region           = "$.region"
+      resource_type    = "$.detail.resource.resourceType"
+      severity         = "$.detail.severity"
     }
 
-    input_template = jsonencode({
-      message     = "AWS <account_id> has a severity <severity> GuardDuty finding of type <finding_type> in the <region> region."
-      description = "<description>"
-      console_url = "https://console.aws.amazon.com/guardduty/home?region=<region>#/findings?search=id=<finding_id>"
-    })
+    input_template = <<-TEMPLATE
+      "GUARDDUTY FINDING: <finding_title>\nSeverity: <severity>\nType: <finding_type>\nResource: <resource_type>\nAccount: <account_id>\nRegion: <region>\nOccurrences: <count>\nFirst seen: <event_first_seen>\nLast seen: <event_last_seen>\nFinding ID: <finding_id>\nDescription: <description>\nView in GuardDuty: https://console.aws.amazon.com/guardduty/home?region=<region>#/findings?search=id=<finding_id>"
+    TEMPLATE
   }
 }
 
